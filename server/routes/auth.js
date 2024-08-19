@@ -17,6 +17,8 @@ router.post("/user/login", async (req, res) => {
         error: "Invalid email/password",
       });
     }
+    // Set session data
+    req.session.user = user;
     return res.redirect("/");
   } catch (error) {
     return res.render("auth/login", {
@@ -25,6 +27,7 @@ router.post("/user/login", async (req, res) => {
     });
   }
 });
+
 
 router.get("/user/register", (req, res) => {
   res.render("auth/register", { title: "register" });
@@ -60,5 +63,15 @@ router.post("/user/register", async (req, res) => {
     });
   }
 });
+
+router.get("/user/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.redirect('/dashboard'); // Handle error
+    }
+    res.redirect('/user/login');
+  });
+});
+
 
 module.exports = router;
