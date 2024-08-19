@@ -19,7 +19,15 @@ router.post("/user/login", async (req, res) => {
     }
     // Set session data
     req.session.user = user;
-    return res.redirect("/");
+
+    // Redirect based on user type
+    if (user.type === 'admin') {
+      return res.redirect('/admin/dashboard');
+    } else if (user.type === 'user') {
+      return res.redirect('/user/dashboard');
+    } else {
+      return res.redirect('/'); // Fallback if type is unknown
+    }
   } catch (error) {
     return res.render("auth/login", {
       title: "Login",

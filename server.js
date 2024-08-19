@@ -30,9 +30,15 @@ app.set("view engine", "ejs");
 // Middleware to set the layout based on authentication
 app.use((req, res, next) => {
   if (req.session.user) {
-    res.locals.layout = 'layouts/authenticated'; // Layout for authenticated users
+    if (req.session.user.type === 'admin') {
+      res.locals.layout = 'layouts/admin';
+    } else if (req.session.user.type === 'user') {
+      res.locals.layout = 'layouts/user';
+    } else {
+      res.locals.layout = 'layouts/main'; // Default layout
+    }
   } else {
-    res.locals.layout = 'layouts/main'; // Layout for non-authenticated users
+    res.locals.layout = 'layouts/main'; // Default layout for non-authenticated users
   }
   next();
 });
@@ -41,10 +47,14 @@ app.use((req, res, next) => {
 // Import routes
 const mainRoutes = require("./server/routes/main");
 const authRoutes = require("./server/routes/auth");
+const userRoutes = require('./server/routes/user');
+const adminRoutes = require('./server/routes/admin');
 
 // Use routes
 app.use(mainRoutes);
 app.use(authRoutes);
+app.use(userRoutes);
+app.use(adminRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
