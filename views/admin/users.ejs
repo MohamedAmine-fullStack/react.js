@@ -1,0 +1,192 @@
+<main class="container mt-5">
+  <h1>Manage Users</h1>
+  <!-- Button to show the add user form -->
+  <button class="btn btn-primary" id="showAddUserFormBtn">Add New User</button>
+
+  <!-- Table to display users -->
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Type</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% users.forEach(user => { %>
+        <tr id="user-<%= user._id %>">
+          <td><%= user.username %></td>
+          <td><%= user.email %></td>
+          <td><%= user.type %></td> <!-- Adjusted from role to type -->
+          <td>
+            <button class="btn btn-warning btn-sm edit-btn" data-id="<%= user._id %>">Edit</button>
+            <a href="/admin/users/delete/<%= user._id %>" class="btn btn-danger btn-sm">Delete</a>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <!-- Form for adding a new user (initially hidden) -->
+  <div id="addUserFormContainer" style="display: none;">
+    <h2>Add New User</h2>
+    <form id="addUserForm" method="POST" action="/admin/users/add">
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" class="form-control" id="username" name="username" required>
+      </div>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" name="password">
+        <small class="form-text text-muted">Keep blank if you don't want to modify the password</small>
+      </div>
+      <div class="mb-3">
+        <label for="type" class="form-label">Type</label>
+        <select id="type" name="type" class="form-select" required>
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Add User</button>
+      <button type="button" class="btn btn-secondary" id="cancelAddBtn">Cancel</button>
+    </form>
+  </div>
+
+  <!-- Form for editing a user -->
+  <div id="editUserFormContainer" style="display: none;">
+    <h2>Edit User</h2>
+    <form id="editUserForm">
+      <input type="hidden" id="editUserId" name="id">
+      <div class="mb-3">
+        <label for="editUsername" class="form-label">Username</label>
+        <input type="text" class="form-control" id="editUsername" name="username" required>
+      </div>
+      <div class="mb-3">
+        <label for="editEmail" class="form-label">Email</label>
+        <input type="email" class="form-control" id="editEmail" name="email" required>
+      </div>
+      <div class="mb-3">
+        <label for="editPassword" class="form-label">Password</label>
+        <input type="password" class="form-control" id="editPassword" name="password">
+        <small class="form-text text-muted">Leave blank if you do not want to change the password</small>
+      </div>
+      <div class="mb-3">
+        <label for="editType" class="form-label">Type</label>
+        <select class="form-control" id="editType" name="type" required>
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+      <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const addUserFormContainer = document.getElementById('addUserFormContainer');
+      const showAddUserFormBtn = document.getElementById('showAddUserFormBtn');
+      const editUserFormContainer = document.getElementById('editUserFormContainer');
+      const cancelAddBtn = document.getElementById('cancelAddBtn');
+      const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+      // Show Add User Form
+      showAddUserFormBtn.addEventListener('click', () => {
+        addUserFormContainer.style.display = 'block';
+        editUserFormContainer.style.display = 'none'; // Hide edit form when adding a new user
+      });
+
+      // Hide Add User Form
+      if (cancelAddBtn) {
+        cancelAddBtn.addEventListener('click', () => {
+          addUserFormContainer.style.display = 'none';
+        });
+      }
+
+      // Handle Add User Form Submission
+      document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
+
+        try {
+          const response = await fetch('/admin/users/add', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (response.ok) {
+            window.location.reload(); // Reload the page to update the table
+          } else {
+            const error = await response.json();
+            console.error('Error adding user:', error.error);
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      });
+
+      // Handle Edit Button Click
+      document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', async () => {
+          const userId = button.getAttribute('data-id');
+          try {
+            const response = await fetch(`/admin/users/${userId}`);
+            const user = await response.json();
+            if (user) {
+              document.getElementById('editUserId').value = user._id;
+              document.getElementById('editUsername').value = user.username;
+              document.getElementById('editEmail').value = user.email;
+              document.getElementById('editType').value = user.type; // Adjusted to type
+              addUserFormContainer.style.display = 'none'; // Hide add form when editing
+              editUserFormContainer.style.display = 'block';
+            }
+          } catch (error) {
+            console.error('Error fetching user:', error);
+          }
+        });
+      });
+
+      // Handle Edit User Form Submission
+      editUserForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(editUserForm);
+        const data = Object.fromEntries(formData);
+        const userId = document.getElementById('editUserId').value;
+        
+        try {
+          const response = await fetch(`/admin/users/edit/${userId}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (response.ok) {
+            window.location.reload(); // Reload the page to update the table
+          } else {
+            console.error('Error updating user');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      });
+
+      // Cancel Edit
+      if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', () => {
+          editUserFormContainer.style.display = 'none';
+        });
+      }
+    });
+  </script>
+</main>
