@@ -5,6 +5,8 @@ const expressLayouts = require("express-ejs-layouts");
 const bodyParser = require("body-parser");
 const connectDB = require("./server/config/db");
 const session = require('express-session');
+const path = require('path');
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -55,6 +57,9 @@ app.use(mainRoutes);
 app.use(authRoutes);
 app.use(userRoutes);
 app.use(adminRoutes);
+//app.use('/uploads', express.static('public/uploads'));
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
