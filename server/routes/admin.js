@@ -104,10 +104,10 @@ router.post('/admin/users/add', async (req, res) => {
 
 // Route to handle editing a user
 router.post('/admin/users/edit/:id', isAdmin, async (req, res) => {
-  const { username, email, role, password } = req.body;
+  const { username, email, type , password } = req.body;
   
   try {
-    const updateData = { username, email, role };
+    const updateData = { username, email, type };
 
     // Check if a new password is provided
     if (password) {
