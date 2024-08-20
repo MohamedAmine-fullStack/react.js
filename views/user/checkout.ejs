@@ -1,0 +1,70 @@
+<div class="container">
+  <h1 class="mb-4">Checkout</h1>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody id="product-list">
+      <!-- Products will be dynamically inserted here -->
+    </tbody>
+  </table>
+  <button class="btn btn-success" id="checkoutButton">Validate</button>
+</div>
+<script>
+  // Function to display products from local storage
+  function displayProducts() {
+    const productList = document.getElementById("product-list");
+    const cart = JSON.parse(localStorage.getItem("cart")) || {};
+    console.log("Products in cart:", cart);
+
+    const products = Object.values(cart); // Convert cart object to array of products
+
+    if (products.length === 0) {
+      productList.innerHTML =
+        "<tr><td colspan='4'>No products in the cart.</td></tr>";
+      return;
+    }
+
+    let html = "";
+    products.forEach((product) => {
+      const price = Number(product.price); // Convert price to number
+      const productTotal = price * product.quantity;
+      html += `
+        <tr>
+          <td>
+            <div class="d-flex  align-items-center">
+              <img src="${product.image}" alt="${
+        product.name
+      }" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+              <span class="ml-2">${product.name}</span>
+            </div>
+          </td>
+          <td>$${price.toFixed(2)}</td>
+          <td>${product.quantity}</td>
+          <td>$${productTotal.toFixed(2)}</td>
+        </tr>
+      `;
+    });
+
+    productList.innerHTML = html;
+  }
+
+  // Call the function to display products on page load
+  document.addEventListener("DOMContentLoaded", displayProducts);
+
+  // Handle the checkout button click
+  document
+    .getElementById("checkoutButton")
+    .addEventListener("click", function () {
+      alert("Commande validated");
+      setTimeout(function () {
+        localStorage.clear(); // Clear local storage
+        window.location.href = "/shop/products"; // Redirect to products page
+      }, 500); // Wait for 5 seconds
+    });
+</script>

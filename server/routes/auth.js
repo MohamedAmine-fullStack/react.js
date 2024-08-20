@@ -21,12 +21,12 @@ router.post("/user/login", async (req, res) => {
     req.session.user = user;
 
     // Redirect based on user type
-    if (user.type === 'admin') {
-      return res.redirect('/admin/dashboard');
-    } else if (user.type === 'user') {
-      return res.redirect('/user/dashboard');
+    if (user.type === "admin") {
+      return res.redirect("/admin/dashboard");
+    } else if (user.type === "user") {
+      return res.redirect("/shop/products");
     } else {
-      return res.redirect('/'); // Fallback if type is unknown
+      return res.redirect("/"); // Fallback if type is unknown
     }
   } catch (error) {
     return res.render("auth/login", {
@@ -35,7 +35,6 @@ router.post("/user/login", async (req, res) => {
     });
   }
 });
-
 
 router.get("/user/register", (req, res) => {
   res.render("auth/register", { title: "register" });
@@ -75,11 +74,10 @@ router.post("/user/register", async (req, res) => {
 router.get("/user/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) {
-      return res.redirect('/dashboard'); // Handle error
+      return res.redirect("/dashboard"); // Handle error
     }
-    res.redirect('/user/login');
+    res.redirect("/user/login");
   });
 });
-
 
 module.exports = router;

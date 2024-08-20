@@ -1,0 +1,92 @@
+<div class="container">
+  <h1 class="mb-4">Your Cart</h1>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Product</th>
+        <th scope="col">Price</th>
+        <th scope="col">Quantity</th>
+        <th scope="col">Total</th>
+        <th scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody class="table-group-divider" id="cart-items">
+      <!-- Cart items will be dynamically inserted here -->
+    </tbody>
+  </table>
+  <h3 id="cart-total">Total: $0.00</h3>
+</div>
+
+<script>
+  function loadCart() {
+    const cart = JSON.parse(localStorage.getItem("cart")) || {};
+    console.log("Cart data:", cart); // Debugging: Log cart data to console
+    const cartItemsContainer = document.getElementById("cart-items");
+    const cartTotalElement = document.getElementById("cart-total");
+    let overallTotal = 0;
+
+    cartItemsContainer.innerHTML = ""; // Clear existing items
+
+    for (const productId in cart) {
+      if (cart.hasOwnProperty(productId)) {
+        const product = cart[productId];
+        const price = Number(product.price); // Convert price to number
+        const productTotal = price * product.quantity;
+        overallTotal += productTotal;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+              <td>${product.name}</td>
+              <td>$${price.toFixed(2)}</td>
+              <td>
+                <div class="d-flex justify-content-start align-items-center">
+                    <button class="btn btn-secondary btn-sm" onclick="decrementQuantity('${productId}')">-</button>
+                    <p class="mx-2 mb-0">${product.quantity}</p>
+                    <button class="btn btn-secondary btn-sm" onclick="incrementQuantity('${productId}')">+</button>
+                </div>
+              </td>
+              <td>$${productTotal.toFixed(2)}</td>
+              <td><button class="btn btn-danger" onclick="removeFromCart('${productId}')">Remove</button></td>
+            `;
+        cartItemsContainer.appendChild(row);
+      }
+    }
+
+    cartTotalElement.textContent = `Total: $${overallTotal.toFixed(2)}`;
+  }
+
+  function incrementQuantity(productId) {
+    const cart = JSON.parse(localStorage.getItem("cart")) || {};
+    if (cart[productId]) {
+      cart[productId].quantity += 1;
+      localStorage.setItem("cart", JSON.stringify(cart));
+      loadCart(); // Reload the cart to reflect changes
+    }
+  }
+
+  function decrementQuantity(productId) {
+    const cart = JSON.parse(localStorage.getItem("cart")) || {};
+    if (cart[productId] && cart[productId].quantity > 1) {
+      cart[productId].quantity -= 1;
+      localStorage.setItem("cart", JSON.stringify(cart));
+      loadCart(); // Reload the cart to reflect changes
+    }
+  }
+
+  function removeFromCart(productId) {
+    const cart = JSON.parse(localStorage.getItem("cart")) || {};
+    if (cart[productId]) {
+      delete cart[productId];
+      localStorage.setItem("cart", JSON.stringify(cart));
+      loadCart(); // Reload the cart to reflect changes
+    }
+  }
+
+  // Load the cart when the page is loaded
+  window.onload = loadCart;
+</script>
+
+<div class="d-flex justify-content-end">
+  <a href="/shop/checkout" class="btn btn-success">Proceed to checkout</a>
+</div>
